@@ -29,3 +29,9 @@ NAME                : LETTER+ ;
 NUMBER              : DIGIT+ ('.' DIGIT+)? ;
 
 WHITESPACE          : ' ' -> skip;
+
+// Catchall rule that should be put at the end of the grammar.
+// It matches any character that didn’t find its place during the parsing.
+// Creating this rule can help during development, when grammar has still many holes.
+// It's even useful during production, when it shows up when something is wrong.
+ANY : . ;
