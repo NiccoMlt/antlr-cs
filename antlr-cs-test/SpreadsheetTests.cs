@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using antlr_cs;
 using Antlr4.Runtime;
@@ -35,9 +34,53 @@ namespace antlr_cs_test
             parser.AddErrorListener(errorListener);            
         }
         
-        /// <summary>
-        /// it checks that the correct tokens are selected. 
-        /// </summary>
+        [Theory]
+        [InlineData("1")]
+        [InlineData("10")]
+        [InlineData("10.00")]        
+        public void TestNumericAtomId(string value)
+        {
+            Setup(value);
+
+            var context = parser.expression() as SpreadsheetParser.IdAtomExpContext;
+
+            var ts = (CommonTokenStream)parser.InputStream;            
+
+            Assert.Equal(SpreadsheetLexer.NUMBER, ts.Get(0).Type);
+
+            // note that this.errorListener.symbol could be null or empty
+            // when ANTLR doesn't recognize the token or there is no error.
+            // In such cases check the output of errorListener            
+            Assert.Null(errorListener.Symbol);
+        }
+        
+        [Fact]
+        public void TestExpressionAtomId()
+        {
+            Setup("A1");
+
+            var context = parser.expression() as SpreadsheetParser.IdAtomExpContext;
+
+            var ts = (CommonTokenStream) parser.InputStream;            
+
+            Assert.Equal(SpreadsheetLexer.ID, ts.Get(0).Type);           
+            Assert.Null(errorListener.Symbol);
+        }
+
+        [Fact]
+        public void TestWrongExpressionAtomId()
+        {
+            Setup("AB1");
+
+            var context = parser.expression() as SpreadsheetParser.IdAtomExpContext;
+
+            var ts = (CommonTokenStream)parser.InputStream;
+            ts.Seek(0);
+
+            Assert.Equal(SpreadsheetLexer.NAME, ts.Get(0).Type);
+            Assert.Equal("<EOF>", errorListener.Symbol);
+        }
+        
         [Fact]
         public void TestExpressionPow()
         {
@@ -69,7 +112,18 @@ namespace antlr_cs_test
             Assert.Equal(double.Parse("262144"), result);
         }
         
-        // [...]
+        [Fact]
+        public void TestVisitFunctionExp()
+        {
+            Setup("log(100)");
+
+            var context = parser.expression() as SpreadsheetParser.FunctionExpContext;
+
+            var visitor = new SpreadsheetVisitor();
+            var result = visitor.VisitFunctionExp(context);
+
+            Assert.Equal(result, double.Parse("2"));
+        }
         
         [Fact]
         public void TestWrongVisitFunctionExp()
@@ -98,13 +152,13 @@ namespace antlr_cs_test
         {
             Setup("log(5+6*7/8)");
 
-            SpreadsheetParser.ExpressionContext context = parser.expression();
+            var context = parser.expression();
 
-            SpreadsheetVisitor visitor = new SpreadsheetVisitor();
-            double result = visitor.Visit(context);
+            var visitor = new SpreadsheetVisitor();
+            var result = visitor.Visit(context);
 
             // we make sure that the correct format is selected, because different countries use different symbols as the decimal mark
-            Assert.Equal("1.01072386539177", result.ToString(System.Globalization.CultureInfo.GetCultureInfo("en-US").NumberFormat));            
+            Assert.Equal("1.0107238653917732", result.ToString(System.Globalization.CultureInfo.GetCultureInfo("en-US").NumberFormat));            
         }
     }
 }

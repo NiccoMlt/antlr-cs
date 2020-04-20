@@ -80,7 +80,7 @@ namespace antlr_cs
             {
                 "sqrt" => Math.Sqrt(Visit(context.expression())),
                 "log" => Math.Log10(Visit(context.expression())),
-                _ => 0
+                _ => 0 // if there is no function the result remains 0; maybe should throw an exception
             };
 
             return result;
