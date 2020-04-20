@@ -338,3 +338,19 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+
+### ANTLR 4 template
+# code generation output folder
+gen
+
+# ANTLR4 and program generated files
+Spreadsheet.interp
+Spreadsheet.tokens
+SpreadsheetLexer.tokens
+SpreadsheetLexer.interp
+SpreadsheetLexer.*
+SpreadsheetListener.*
+SpreadsheetParser.*
+SpreadsheetVisitor.*
+SpreadsheetBaseVisitor.*
+SpreadsheetBaseListener.*
